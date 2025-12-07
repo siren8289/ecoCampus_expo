@@ -1,7 +1,12 @@
-"""캐릭터 관련 API 라우트"""
+"""
+캐릭터 관련 API 라우트
+
+캐릭터 진행률, 상태 카드, 연속 미션 일수 등을 제공하는 API 엔드포인트를 정의합니다.
+"""
 from flask import Blueprint, jsonify
 from models import db, CharacterProgressModel, StatusCardModel, StreakModel
 
+# Blueprint 생성
 character_bp = Blueprint('character', __name__)
 
 

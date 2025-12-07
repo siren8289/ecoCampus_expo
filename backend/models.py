@@ -1,20 +1,43 @@
-"""데이터베이스 모델 정의"""
+"""
+데이터베이스 모델 정의
+
+이 모듈은 SQLAlchemy를 사용하여 데이터베이스 테이블을 정의합니다.
+각 클래스는 하나의 데이터베이스 테이블을 나타내며,
+클래스의 속성은 테이블의 컬럼을 나타냅니다.
+"""
 from flask_sqlalchemy import SQLAlchemy
 
+# SQLAlchemy 인스턴스 생성
+# 이 객체를 사용하여 데이터베이스 작업을 수행합니다
 db = SQLAlchemy()
 
 
 class User(db.Model):
-    __tablename__ = 'users'
+    """
+    사용자 모델
+    
+    사용자의 기본 정보를 저장하는 테이블입니다.
+    이름, 학과, 레벨, 캐릭터, 포인트 등의 정보를 포함합니다.
+    """
+    __tablename__ = 'users'  # 데이터베이스 테이블 이름
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    department = db.Column(db.String(100), nullable=False)
-    level = db.Column(db.Integer, default=1)
-    character = db.Column(db.String(50), default='나무')
-    points = db.Column(db.Integer, default=0)
+    # 컬럼 정의
+    id = db.Column(db.Integer, primary_key=True)  # 기본키, 자동 증가
+    name = db.Column(db.String(50), nullable=False)  # 사용자 이름 (최대 50자, 필수)
+    department = db.Column(db.String(100), nullable=False)  # 학과 (최대 100자, 필수)
+    level = db.Column(db.Integer, default=1)  # 사용자 레벨 (기본값: 1)
+    character = db.Column(db.String(50), default='나무')  # 캐릭터 이름 (기본값: '나무')
+    points = db.Column(db.Integer, default=0)  # 보유 포인트 (기본값: 0)
 
     def to_dict(self):
+        """
+        모델 인스턴스를 딕셔너리로 변환
+        
+        API 응답으로 JSON을 반환할 때 사용합니다.
+        
+        Returns:
+            dict: 사용자 정보를 담은 딕셔너리
+        """
         return {
             'id': self.id,
             'name': self.name,
@@ -26,23 +49,35 @@ class User(db.Model):
 
 
 class Device(db.Model):
+    """
+    IoT 디바이스 모델
+    
+    강의실 내 IoT 기기(조명, 난방, 냉방 등)의 정보를 저장합니다.
+    전력 사용량, 온도, 상태 등을 관리합니다.
+    """
     __tablename__ = 'devices'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    status = db.Column(db.String(10), default='off')  # on/off
-    icon = db.Column(db.String(50), nullable=False)
-    power_usage = db.Column(db.Float, nullable=True)
-    temperature = db.Column(db.Float, nullable=True)
-    type = db.Column(db.String(20), nullable=False)  # light/heating/cooling
+    id = db.Column(db.Integer, primary_key=True)  # 기본키
+    name = db.Column(db.String(100), nullable=False)  # 디바이스 이름 (예: "조명 1")
+    status = db.Column(db.String(10), default='off')  # 상태: 'on' 또는 'off' (기본값: 'off')
+    icon = db.Column(db.String(50), nullable=False)  # 아이콘 이름 (프론트엔드에서 사용)
+    power_usage = db.Column(db.Float, nullable=True)  # 전력 사용량 (와트, 선택적)
+    temperature = db.Column(db.Float, nullable=True)  # 온도 (섭씨, 선택적)
+    type = db.Column(db.String(20), nullable=False)  # 디바이스 타입: 'light', 'heating', 'cooling'
 
     def to_dict(self):
+        """
+        디바이스 정보를 딕셔너리로 변환
+        
+        Returns:
+            dict: 디바이스 정보 (카멜케이스로 변환된 키 사용)
+        """
         return {
             'id': str(self.id),
             'name': self.name,
             'status': self.status,
             'icon': self.icon,
-            'powerUsage': self.power_usage,
+            'powerUsage': self.power_usage,  # 카멜케이스로 변환
             'temperature': self.temperature,
             'type': self.type,
         }
@@ -176,20 +211,34 @@ class CampusStatModel(db.Model):
 
 
 class Mission(db.Model):
+    """
+    미션 모델
+    
+    사용자가 수행할 수 있는 에코 미션 정보를 저장합니다.
+    미션의 진행 상태, 포인트, 카테고리 등을 관리합니다.
+    """
     __tablename__ = 'missions'
 
-    id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(50), unique=True, nullable=True)
-    title = db.Column(db.String(200), nullable=False)
-    emoji = db.Column(db.String(10), nullable=True)
-    category = db.Column(db.String(20), nullable=False)  # all/recycle/quiz/content/contest
-    points = db.Column(db.Integer, default=0)
-    progress = db.Column(db.Float, default=0.0)
-    total_steps = db.Column(db.Integer, default=1)
-    current_step = db.Column(db.Integer, default=0)
-    status = db.Column(db.String(20), default='available')  # available/in-progress/completed
+    id = db.Column(db.Integer, primary_key=True)  # 기본키
+    code = db.Column(db.String(50), unique=True, nullable=True)  # 미션 고유 코드 (선택적, 유니크)
+    title = db.Column(db.String(200), nullable=False)  # 미션 제목 (필수)
+    emoji = db.Column(db.String(10), nullable=True)  # 미션 이모지 (선택적)
+    # 카테고리: 'all', 'recycle', 'quiz', 'content', 'contest'
+    category = db.Column(db.String(20), nullable=False)
+    points = db.Column(db.Integer, default=0)  # 미션 완료 시 획득 포인트 (기본값: 0)
+    progress = db.Column(db.Float, default=0.0)  # 진행률 (0.0 ~ 100.0, 기본값: 0.0)
+    total_steps = db.Column(db.Integer, default=1)  # 전체 단계 수 (기본값: 1)
+    current_step = db.Column(db.Integer, default=0)  # 현재 진행 단계 (기본값: 0)
+    # 상태: 'available' (사용 가능), 'in-progress' (진행 중), 'completed' (완료)
+    status = db.Column(db.String(20), default='available')
 
     def to_dict(self):
+        """
+        미션 정보를 딕셔너리로 변환
+        
+        Returns:
+            dict: 미션 정보 (카멜케이스로 변환된 키 사용)
+        """
         return {
             'id': str(self.id),
             'title': self.title,
@@ -197,8 +246,8 @@ class Mission(db.Model):
             'category': self.category,
             'points': self.points,
             'progress': self.progress,
-            'totalSteps': self.total_steps,
-            'currentStep': self.current_step,
+            'totalSteps': self.total_steps,  # 카멜케이스로 변환
+            'currentStep': self.current_step,  # 카멜케이스로 변환
             'status': self.status,
         }
 
